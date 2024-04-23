@@ -60,23 +60,46 @@ clock = pygame.time.Clock()
 space = pymunk.Space()
 space.gravity = (0, 1000)
 
-fps = 240
+fps = 60
 circles = []
 balls = [create_static_ball(space)]
 create_boundaries(space, 1080, 720)
 
+counter = 0
+
 running = True
+drawing = False
+hold = False
+
 while running:
     clock.tick(fps)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-        if event.type == pygame.MOUSEMOTION:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            drawing = True
+        if event.type == pygame.MOUSEBUTTONUP:
+            drawing = False
+            hold = False
+
+    if drawing:
+        if counter == 12 and not hold:
             color = (random.choice(range(256)),
                      random.choice(range(256)),
                      random.choice(range(256)))
-            circles.append(create_circle(space, event.pos, color))
+            circles.append(create_circle(space, pygame.mouse.get_pos(), color))
+            counter = 0
+            hold = True
+        elif counter == 12 and hold:
+            color = (random.choice(range(256)),
+                    random.choice(range(256)),
+                    random.choice(range(256)))
+            circles.append(create_circle(space, pygame.mouse.get_pos(), color))
+        else:
+            counter += 1
+    else:
+        counter = 12
 
     screen.fill('white')
     draw_circles(circles)
