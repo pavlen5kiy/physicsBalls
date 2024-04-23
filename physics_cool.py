@@ -60,6 +60,8 @@ clock = pygame.time.Clock()
 space = pymunk.Space()
 space.gravity = (0, 1000)
 
+font = pygame.font.Font(None, 100)
+
 fps = 120
 circles = []
 balls = [create_static_ball(space)]
@@ -82,6 +84,18 @@ while running:
         if event.type == pygame.MOUSEBUTTONUP:
             drawing = False
             hold = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r:
+                # Remove all non-static circles
+                circles_to_remove = []
+                for i, (circle, _) in enumerate(circles):
+                    if circle.body.body_type == pymunk.Body.DYNAMIC:
+                        circles_to_remove.append(i)
+
+                # Remove circles after iterating over all circles
+                for index in reversed(circles_to_remove):
+                    circle, _ = circles.pop(index)
+                    space.remove(circle.body, circle)
 
     if drawing:
         if counter == 24 and not hold:
@@ -93,8 +107,8 @@ while running:
             hold = True
         elif counter == 24 and hold:
             color = (random.choice(range(256)),
-                    random.choice(range(256)),
-                    random.choice(range(256)))
+                     random.choice(range(256)),
+                     random.choice(range(256)))
             circles.append(create_circle(space, pygame.mouse.get_pos(), color))
         else:
             counter += 1
@@ -102,6 +116,12 @@ while running:
         counter = 24
 
     screen.fill('white')
+
+    text_surface = font.render('Hold to draw. Press [R] to clear.',
+                               True, 'black')
+    text_width, text_height = text_surface.get_size()
+    screen.blit(text_surface, ((1080 - text_width) // 2, 100))
+
     draw_circles(circles)
     draw_static_balls(balls)
     space.step(1 / fps / 2)
