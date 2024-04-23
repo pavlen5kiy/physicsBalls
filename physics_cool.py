@@ -60,7 +60,7 @@ clock = pygame.time.Clock()
 space = pymunk.Space()
 space.gravity = (0, 1000)
 
-fps = 60
+fps = 120
 circles = []
 balls = [create_static_ball(space)]
 create_boundaries(space, 1080, 720)
@@ -84,14 +84,14 @@ while running:
             hold = False
 
     if drawing:
-        if counter == 12 and not hold:
+        if counter == 24 and not hold:
             color = (random.choice(range(256)),
                      random.choice(range(256)),
                      random.choice(range(256)))
             circles.append(create_circle(space, pygame.mouse.get_pos(), color))
             counter = 0
             hold = True
-        elif counter == 12 and hold:
+        elif counter == 24 and hold:
             color = (random.choice(range(256)),
                     random.choice(range(256)),
                     random.choice(range(256)))
@@ -99,7 +99,7 @@ while running:
         else:
             counter += 1
     else:
-        counter = 12
+        counter = 24
 
     screen.fill('white')
     draw_circles(circles)
