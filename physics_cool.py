@@ -3,6 +3,19 @@ import pymunk
 import random
 
 
+def clear_all(space, circles, balls):
+    # Remove circles and corresponding bodies from space
+    for circle, _ in circles:
+        space.remove(circle.body, circle)
+    # Remove static balls and corresponding bodies from space
+    for ball in balls:
+        space.remove(ball.body, ball)
+
+    # Clear the lists
+    circles.clear()
+    balls.clear()
+
+
 def create_circle(space, pos, color):
     body = pymunk.Body(1, 100, body_type=pymunk.Body.DYNAMIC)
     body.position = pos
@@ -20,9 +33,9 @@ def draw_circles(circles):
         pygame.draw.circle(screen, color, (x, y), 10)
 
 
-def create_static_ball(space):
+def create_static_ball(space, pos):
     body = pymunk.Body(1, 100, body_type=pymunk.Body.STATIC)
-    body.position = (450, 400)
+    body.position = pos
     shape = pymunk.Circle(body, 50)
     shape.elasticity = 0.2
     shape.friction = 2
@@ -55,23 +68,34 @@ def create_boundaries(space, width, height):
 
 
 pygame.init()
-screen = pygame.display.set_mode((1080, 720))
+info = pygame.display.Info()
+WIDTH, HEIGHT = info.current_w, info.current_h
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 space = pymunk.Space()
 space.gravity = (0, 1000)
 
-font = pygame.font.Font(None, 100)
+font = pygame.font.Font(None, 40)
 
 fps = 120
+balls_per_tick = 1
 circles = []
-balls = [create_static_ball(space)]
-create_boundaries(space, 1080, 720)
+balls = []
+create_boundaries(space, WIDTH, HEIGHT)
 
 counter = 0
+bpt_up_counter = 0
+bpt_low_counter = 0
 
 running = True
 drawing = False
+bpt_up = False
+bpt_low = False
 hold = False
+bpt_up_hold = False
+bpt_low_hold = False
+change_bpt_up = 0
+change_bpt_low = 0
 
 while running:
     clock.tick(fps)
@@ -80,22 +104,38 @@ while running:
         if event.type == pygame.QUIT:
             pygame.quit()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            drawing = True
+            if event.button == 1:
+                drawing = True
+            elif event.button == 3:
+                balls.append(create_static_ball(space, pygame.mouse.get_pos()))
         if event.type == pygame.MOUSEBUTTONUP:
-            drawing = False
-            hold = False
+            if event.button == 1:
+                drawing = False
+                hold = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
-                # Remove all non-static circles
-                circles_to_remove = []
-                for i, (circle, _) in enumerate(circles):
-                    if circle.body.body_type == pymunk.Body.DYNAMIC:
-                        circles_to_remove.append(i)
+                clear_all(space, circles, balls)
 
-                # Remove circles after iterating over all circles
-                for index in reversed(circles_to_remove):
-                    circle, _ = circles.pop(index)
-                    space.remove(circle.body, circle)
+            if event.key == pygame.K_UP:
+                bpt_up = True
+
+            if event.key == pygame.K_DOWN:
+                bpt_low = True
+
+            if event.key == pygame.K_q:
+                running = False
+                break
+
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_UP:
+                bpt_up = False
+                bpt_up_hold = False
+                change_bpt_up = 0
+
+            if event.key == pygame.K_DOWN:
+                bpt_low = False
+                bpt_low_hold = False
+                change_bpt_low = 0
 
     if drawing:
         if counter == 24 and not hold:
@@ -106,21 +146,59 @@ while running:
             counter = 0
             hold = True
         elif counter == 24 and hold:
-            color = (random.choice(range(256)),
-                     random.choice(range(256)),
-                     random.choice(range(256)))
-            circles.append(create_circle(space, pygame.mouse.get_pos(), color))
+            for _ in range(balls_per_tick):
+                color = (random.choice(range(256)),
+                         random.choice(range(256)),
+                         random.choice(range(256)))
+                x, y = pygame.mouse.get_pos()
+                x += random.randrange(0, 10) - random.randrange(0, 10)
+                y += random.randrange(0, 10) - random.randrange(0, 10)
+                circles.append(create_circle(space, (x, y), color))
         else:
             counter += 1
     else:
         counter = 24
 
+    if balls_per_tick + 1 <= 10:
+        if bpt_up:
+            if bpt_up_counter == 24 and not bpt_up_hold:
+                bpt_up_counter = 0
+                balls_per_tick += 1
+                bpt_up_hold = True
+            elif bpt_up_counter == 24 and bpt_up_hold:
+                change_bpt_up += 1
+                if change_bpt_up == 20:
+                    balls_per_tick += 1
+                    change_bpt_up = 0
+            else:
+                bpt_up_counter += 1
+        else:
+            bpt_up_counter = 24
+
+    if balls_per_tick - 1 >= 1:
+        if bpt_low:
+            if bpt_low_counter == 24 and not bpt_low_hold:
+                bpt_low_counter = 0
+                balls_per_tick -= 1
+                bpt_low_hold = True
+            elif bpt_low_counter == 24 and bpt_low_hold:
+                change_bpt_low += 1
+                if change_bpt_low == 20:
+                    balls_per_tick -= 1
+                    change_bpt_low = 0
+            else:
+                bpt_low_counter += 1
+        else:
+            bpt_low_counter = 24
+
     screen.fill('white')
 
-    text_surface = font.render('Hold to draw. Press [R] to clear.',
-                               True, 'black')
+    text_surface = font.render(
+        f'LMB hold to draw. RMB to place static ball. '
+        f'[R] to clear. [Q] to quit. Balls per tick: {balls_per_tick}; use arrows to change.',
+        True, 'black')
     text_width, text_height = text_surface.get_size()
-    screen.blit(text_surface, ((1080 - text_width) // 2, 100))
+    screen.blit(text_surface, ((WIDTH - text_width) // 2, 100))
 
     draw_circles(circles)
     draw_static_balls(balls)
