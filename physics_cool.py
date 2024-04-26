@@ -19,7 +19,7 @@ def clear_all(space, circles, balls):
 def create_circle(space, pos, color):
     body = pymunk.Body(1, 100, body_type=pymunk.Body.DYNAMIC)
     body.position = pos
-    shape = pymunk.Circle(body, 10)
+    shape = pymunk.Circle(body, 5)
     shape.elasticity = 1
     shape.friction = 1000
     space.add(body, shape)
@@ -30,7 +30,7 @@ def draw_circles(circles):
     for circle, color in circles:
         x = int(circle.body.position.x)
         y = int(circle.body.position.y)
-        pygame.draw.circle(screen, color, (x, y), 10)
+        pygame.draw.circle(screen, color, (x, y), 5)
 
 
 def create_static_ball(space, pos):
@@ -75,7 +75,7 @@ clock = pygame.time.Clock()
 space = pymunk.Space()
 space.gravity = (0, 1000)
 
-font = pygame.font.Font(None, 36)
+font = pygame.font.Font(None, 30)
 
 fps = 120
 balls_per_tick = 1
@@ -98,6 +98,7 @@ change_bpt_up = 0
 change_bpt_low = 0
 render_brush_size = False
 simulate = True
+show_hints = True
 
 while running:
     clock.tick(fps)
@@ -132,6 +133,9 @@ while running:
 
             if event.key == pygame.K_SPACE:
                 simulate = not simulate
+
+            if event.key == pygame.K_h:
+                show_hints = not show_hints
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
@@ -202,13 +206,14 @@ while running:
 
     screen.fill('#DFB8F2')
 
-    text_surface = font.render(
-        f'LMB hold to draw. RMB to place static ball. '
-        f'[R] to clear. [Space] to pause. [Q] to quit. Brush size: {balls_per_tick} (use arrows to change).',
-        True, '#613E73')
-    text_width, text_height = text_surface.get_size()
+    if show_hints:
+        text_surface = font.render(
+            f'LMB hold to draw. RMB to place static ball. '
+            f'[R] to clear. [Space] to pause. [Q] to quit. [H] to hide hints. Brush size: {balls_per_tick} (use arrows to change).',
+            True, '#613E73')
+        text_width, text_height = text_surface.get_size()
 
-    screen.blit(text_surface, ((WIDTH - text_width) // 2, 100))
+        screen.blit(text_surface, ((WIDTH - text_width) // 2, 100))
 
     draw_circles(circles)
     draw_static_balls(balls)
