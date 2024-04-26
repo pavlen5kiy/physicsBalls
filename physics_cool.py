@@ -75,7 +75,7 @@ clock = pygame.time.Clock()
 space = pymunk.Space()
 space.gravity = (0, 1000)
 
-font = pygame.font.Font(None, 40)
+font = pygame.font.Font(None, 36)
 
 fps = 120
 balls_per_tick = 1
@@ -97,6 +97,7 @@ bpt_low_hold = False
 change_bpt_up = 0
 change_bpt_low = 0
 render_brush_size = False
+simulate = True
 
 while running:
     clock.tick(fps)
@@ -128,6 +129,9 @@ while running:
             if event.key == pygame.K_q:
                 running = False
                 break
+
+            if event.key == pygame.K_SPACE:
+                simulate = not simulate
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
@@ -196,23 +200,20 @@ while running:
         else:
             bpt_low_counter = 24
 
-    screen.fill((223, 184, 243))
+    screen.fill('#DFB8F2')
 
     text_surface = font.render(
         f'LMB hold to draw. RMB to place static ball. '
-        f'[R] to clear. [Q] to quit. Brush size: {balls_per_tick} (use arrows to change).',
-        True, 'white')
+        f'[R] to clear. [Space] to pause. [Q] to quit. Brush size: {balls_per_tick} (use arrows to change).',
+        True, '#613E73')
     text_width, text_height = text_surface.get_size()
 
-    brush_size_text = font.render(f'{balls_per_tick}', True, 'white')
     screen.blit(text_surface, ((WIDTH - text_width) // 2, 100))
 
     draw_circles(circles)
     draw_static_balls(balls)
-    space.step(1 / fps / 2)
 
-    # if render_brush_size:
-    #     x, y = pygame.mouse.get_pos()
-    #     screen.blit(brush_size_text, (x - 20, y - 20))
-    #
+    if simulate:
+        space.step(1 / fps / 2)
+
     pygame.display.flip()
