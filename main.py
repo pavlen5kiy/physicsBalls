@@ -4,6 +4,15 @@ import random
 import asyncio
 
 
+# /// script
+# dependencies = [
+# "pygame",
+# "cffi",
+# "pymunk",
+# ]
+# ///
+
+
 def clear_all(space, circles, balls):
     # Remove circles and corresponding bodies from space
     for circle, _ in circles:
@@ -71,7 +80,7 @@ def create_boundaries(space, width, height):
 async def main():
     pygame.init()
     info = pygame.display.Info()
-    WIDTH, HEIGHT = 1080, 720
+    WIDTH, HEIGHT = 1920, 1080
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
     space = pymunk.Space()
@@ -200,14 +209,14 @@ async def main():
 
         screen.fill((223, 184, 243))
 
-        # text_surface = font.render(
-        #     f'LMB hold to draw. RMB to place static ball. '
-        #     f'[R] to clear. Brush size: {balls_per_tick} (use arrows to change).',
-        #     True, 'white')
-        # text_width, text_height = text_surface.get_size()
-        #
-        # brush_size_text = font.render(f'{balls_per_tick}', True, 'white')
-        # screen.blit(text_surface, ((WIDTH - text_width) // 2, 20))
+        text_surface = font.render(
+            f'LMB hold to draw. RMB to place static ball. '
+            f'[R] to clear. Brush size: {balls_per_tick} (use arrows to change).',
+            True, 'white')
+        text_width, text_height = text_surface.get_size()
+
+        brush_size_text = font.render(f'{balls_per_tick}', True, 'white')
+        screen.blit(text_surface, ((WIDTH - text_width) // 2, 20))
 
         draw_circles(screen, circles)
         draw_static_balls(screen, balls)
