@@ -1,6 +1,7 @@
 import pygame
 import pymunk
 import random
+import asyncio
 
 
 def clear_all(space, circles, balls):
@@ -67,7 +68,7 @@ def create_boundaries(space, width, height):
         space.add(body, shape)
 
 
-def main():
+async def main():
     pygame.init()
     info = pygame.display.Info()
     WIDTH, HEIGHT = 1080, 720
@@ -199,14 +200,14 @@ def main():
 
         screen.fill((223, 184, 243))
 
-        text_surface = font.render(
-            f'LMB hold to draw. RMB to place static ball. '
-            f'[R] to clear. Brush size: {balls_per_tick} (use arrows to change).',
-            True, 'white')
-        text_width, text_height = text_surface.get_size()
-
-        brush_size_text = font.render(f'{balls_per_tick}', True, 'white')
-        screen.blit(text_surface, ((WIDTH - text_width) // 2, 20))
+        # text_surface = font.render(
+        #     f'LMB hold to draw. RMB to place static ball. '
+        #     f'[R] to clear. Brush size: {balls_per_tick} (use arrows to change).',
+        #     True, 'white')
+        # text_width, text_height = text_surface.get_size()
+        #
+        # brush_size_text = font.render(f'{balls_per_tick}', True, 'white')
+        # screen.blit(text_surface, ((WIDTH - text_width) // 2, 20))
 
         draw_circles(screen, circles)
         draw_static_balls(screen, balls)
@@ -217,7 +218,8 @@ def main():
         #     screen.blit(brush_size_text, (x - 20, y - 20))
         #
         pygame.display.flip()
+        await asyncio.sleep(0)
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
