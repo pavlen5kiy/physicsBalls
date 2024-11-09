@@ -81,7 +81,7 @@ async def main():
     pygame.init()
     info = pygame.display.Info()
     WIDTH, HEIGHT = 1920, 1080
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF)
     clock = pygame.time.Clock()
     space = pymunk.Space()
     space.gravity = (0, 1000)
